@@ -77,6 +77,8 @@
 		AEA2FCF51A8CE31000123462 /* TestTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = ABB790CB1936F2500084B964 /* TestTracker.m */; };
 		AEA2FCF61A8CE31200123462 /* TestEventStore.m in Sources */ = {isa = PBXBuildFile; fileRef = AB4338571950A530006A1DE4 /* TestEventStore.m */; };
 		AEB76D621A8E3AC800BD0E69 /* OpenIDFA.m in Sources */ = {isa = PBXBuildFile; fileRef = AB39617119530E850002F235 /* OpenIDFA.m */; };
+		FA913EE820DA13FE0005AD90 /* SPUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA913EE720DA13FE0005AD90 /* SPUtilities.swift */; };
+		FA913EE920DACE430005AD90 /* SPUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA913EE720DA13FE0005AD90 /* SPUtilities.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,6 +188,7 @@
 		C76F61F8CADECC35DA3D5132 /* Pods-Base-Snowplow-OSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Base-Snowplow-OSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Base-Snowplow-OSX/Pods-Base-Snowplow-OSX.debug.xcconfig"; sourceTree = "<group>"; };
 		D284B1244765020D7B12B722 /* libPods-SnowplowTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SnowplowTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA913EE620DA13FE0005AD90 /* Snowplow-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Snowplow-Bridging-Header.h"; sourceTree = "<group>"; };
+		FA913EE720DA13FE0005AD90 /* SPUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPUtilities.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -320,6 +323,7 @@
 				ABB767AF194974D3006275D1 /* SPEventStore.m */,
 				ABFCC3741922984A00FAE8FE /* SPUtilities.h */,
 				ABFCC3751922984A00FAE8FE /* SPUtilities.m */,
+				FA913EE720DA13FE0005AD90 /* SPUtilities.swift */,
 				0413DD751B78D635000D2112 /* SPRequestResponse.h */,
 				0413DD761B78D643000D2112 /* SPRequestResponse.m */,
 				044CA88B1B94791E000EA3B1 /* SPWeakTimerTarget.h */,
@@ -723,6 +727,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				043EC5E71B8F224900294081 /* Snowplow.m in Sources */,
+				FA913EE820DA13FE0005AD90 /* SPUtilities.swift in Sources */,
 				AB39617219530E850002F235 /* OpenIDFA.m in Sources */,
 				AB9E8212192DD336006744C9 /* SPTracker.m in Sources */,
 				AB0C27EB191B43D600018557 /* SPEmitter.m in Sources */,
@@ -743,6 +748,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB0C27DD191B408200018557 /* SnowplowTests.m in Sources */,
+				FA913EE920DACE430005AD90 /* SPUtilities.swift in Sources */,
 				040296EB1BB155A700895DED /* TestGeneratedJsons.m in Sources */,
 				04EF45611BB01C26008E5E8B /* TestSelfDescribingJson.m in Sources */,
 				ABB790CC1936F2500084B964 /* TestTracker.m in Sources */,
