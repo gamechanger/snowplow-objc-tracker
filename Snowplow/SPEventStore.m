@@ -23,7 +23,7 @@
 #import "Snowplow.h"
 #import "SPEventStore.h"
 #import "SPPayload.h"
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 #import "FMDB.h"
 
 @implementation SPEventStore {

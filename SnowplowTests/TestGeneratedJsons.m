@@ -30,7 +30,7 @@
 #import "SPPayload.h"
 #import "SPEvent.h"
 #import "SPSelfDescribingJson.h"
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 
 @interface TestGeneratedJsons : XCTestCase
 

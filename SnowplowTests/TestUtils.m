@@ -21,7 +21,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 #import "Snowplow.h"
 
 @interface TestUtils : XCTestCase

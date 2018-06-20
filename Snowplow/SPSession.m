@@ -22,7 +22,7 @@
 
 #import "Snowplow.h"
 #import "SPSession.h"
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 #import "SPWeakTimerTarget.h"
 
 #if SNOWPLOW_TARGET_IOS

@@ -23,7 +23,7 @@
 #import "Snowplow.h"
 #import "SPEmitter.h"
 #import "SPEventStore.h"
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 #import "SPPayload.h"
 #import "SPSelfDescribingJson.h"
 #import "SPRequestResponse.h"

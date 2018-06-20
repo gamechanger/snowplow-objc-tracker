@@ -23,7 +23,7 @@
 #import "Snowplow.h"
 #import "SPSubject.h"
 #import "SPPayload.h"
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 
 @implementation SPSubject {
     SPPayload *           _standardDict;

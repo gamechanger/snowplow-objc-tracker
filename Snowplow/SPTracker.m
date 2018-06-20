@@ -26,7 +26,7 @@
 #import "SPSubject.h"
 #import "SPPayload.h"
 #import "SPSelfDescribingJson.h"
-#import "SPUtilities.h"
+#import "Snowplow-Swift.h"
 #import "SPSession.h"
 #import "SPEvent.h"
 
