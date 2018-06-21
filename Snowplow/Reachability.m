@@ -34,6 +34,16 @@
 #import <ifaddrs.h>
 #import <netdb.h>
 
+/*
+ ===========================================================================
+ ATTENTION: PLEASE READ
+ ===========================================================================
+ This file was copied from https://github.com/tonymillion/Reachability/blob/184d6d44f0f21b6428d833d265f5d0cfa1ed88d8/Reachability.m
+ so that we could remove the Reachability pod dependency. This Pod is used in
+ https://github.com/gamechanger/odyssey where the module name conflicts with
+ ReachabilitySwift. If you find something wrong with Reachability in this Pod,
+ I would recommend see if this file is behind https://github.com/tonymillion/Reachability/blob/master/Reachability.m
+ */
 
 NSString *const kReachabilityChangedNotification = @"kReachabilityChangedNotification";
 
@@ -88,12 +98,12 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 #pragma mark - Class Constructor Methods
 
-+(Reachability*)reachabilityWithHostName:(NSString*)hostname
++(instancetype)reachabilityWithHostName:(NSString*)hostname
 {
     return [Reachability reachabilityWithHostname:hostname];
 }
 
-+(Reachability*)reachabilityWithHostname:(NSString*)hostname
++(instancetype)reachabilityWithHostname:(NSString*)hostname
 {
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithName(NULL, [hostname UTF8String]);
     if (ref) 
@@ -106,7 +116,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return nil;
 }
 
-+(Reachability *)reachabilityWithAddress:(void *)hostAddress
++(instancetype)reachabilityWithAddress:(void *)hostAddress
 {
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr*)hostAddress);
     if (ref) 
@@ -119,8 +129,8 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return nil;
 }
 
-+(Reachability *)reachabilityForInternetConnection 
-{   
++(instancetype)reachabilityForInternetConnection
+{
     struct sockaddr_in zeroAddress;
     bzero(&zeroAddress, sizeof(zeroAddress));
     zeroAddress.sin_len = sizeof(zeroAddress);
@@ -129,7 +139,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return [self reachabilityWithAddress:&zeroAddress];
 }
 
-+(Reachability*)reachabilityForLocalWiFi
++(instancetype)reachabilityForLocalWiFi
 {
     struct sockaddr_in localWifiAddress;
     bzero(&localWifiAddress, sizeof(localWifiAddress));
@@ -144,7 +154,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // Initialization methods
 
--(Reachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref 
+-(instancetype)initWithReachabilityRef:(SCNetworkReachabilityRef)ref
 {
     self = [super init];
     if (self != nil) 
@@ -172,7 +182,8 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     }
 
 	self.reachableBlock          = nil;
-	self.unreachableBlock        = nil;
+    self.unreachableBlock        = nil;
+    self.reachabilityBlock       = nil;
     self.reachabilitySerialQueue = nil;
 }
 
@@ -448,6 +459,11 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
         {
             self.unreachableBlock(self);
         }
+    }
+    
+    if(self.reachabilityBlock)
+    {
+        self.reachabilityBlock(self, flags);
     }
     
     // this makes sure the change notification happens on the MAIN THREAD

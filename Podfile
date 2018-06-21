@@ -12,7 +12,6 @@ abstract_target 'Base' do
     inherit! :search_paths
     platform :ios, '8.0'
     pod 'FMDB', '2.6.2'
-    pod 'Reachability', '3.2'
   end
 
   target 'Snowplow-OSX' do

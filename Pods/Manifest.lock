@@ -6,23 +6,27 @@ PODS:
     - KiteJSONValidator/KiteJSONResources (= 0.2.3)
   - KiteJSONValidator/KiteJSONResources (0.2.3)
   - Nocilla (0.11.0)
-  - Reachability (3.2)
   - SnowplowIgluClient (0.1.0):
     - KiteJSONValidator (~> 0.2.3)
 
 DEPENDENCIES:
   - FMDB (= 2.6.2)
   - Nocilla
-  - Reachability (= 3.2)
   - SnowplowIgluClient
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - FMDB
+    - KiteJSONValidator
+    - Nocilla
+    - SnowplowIgluClient
 
 SPEC CHECKSUMS:
   FMDB: 854a0341b4726e53276f2a8996f06f1b80f9259a
   KiteJSONValidator: 9692df579aab9d195c68d4cab992cfd37d8744ab
   Nocilla: 7af7a386071150cc8aa5da4da97d060f049dd61c
-  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   SnowplowIgluClient: 117bb17597bffc5504a05ad27e1e4c93f90f3cc7
 
-PODFILE CHECKSUM: 7cb9857db6eb8c536a935c789bba0af5b9f23005
+PODFILE CHECKSUM: e6231ffb60c30826c46fc003a1ad4dc733b1939c
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.5.3

@@ -28,6 +28,22 @@
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
+/*
+ ===========================================================================
+ ATTENTION: PLEASE READ
+ ===========================================================================
+ This file was copied from https://github.com/tonymillion/Reachability/blob/184d6d44f0f21b6428d833d265f5d0cfa1ed88d8/Reachability.h
+ so that we could remove the Reachability pod dependency. This Pod is used in
+ https://github.com/gamechanger/odyssey where the module name conflicts with
+ ReachabilitySwift. If you find something wrong with Reachability in this Pod,
+ I would recommend see if this file is behind https://github.com/tonymillion/Reachability/blob/master/Reachability.h
+ */
+
+//! Project version number for MacOSReachability.
+FOUNDATION_EXPORT double ReachabilityVersionNumber;
+
+//! Project version string for MacOSReachability.
+FOUNDATION_EXPORT const unsigned char ReachabilityVersionString[];
 
 /** 
  * Create NS_ENUM macro if it does not exist on the targeted version of iOS or OS X.
@@ -51,25 +67,27 @@ typedef NS_ENUM(NSInteger, NetworkStatus) {
 
 typedef void (^NetworkReachable)(Reachability * reachability);
 typedef void (^NetworkUnreachable)(Reachability * reachability);
+typedef void (^NetworkReachability)(Reachability * reachability, SCNetworkConnectionFlags flags);
 
 
 @interface Reachability : NSObject
 
 @property (nonatomic, copy) NetworkReachable    reachableBlock;
 @property (nonatomic, copy) NetworkUnreachable  unreachableBlock;
+@property (nonatomic, copy) NetworkReachability reachabilityBlock;
 
 @property (nonatomic, assign) BOOL reachableOnWWAN;
 
 
-+(Reachability*)reachabilityWithHostname:(NSString*)hostname;
++(instancetype)reachabilityWithHostname:(NSString*)hostname;
 // This is identical to the function above, but is here to maintain
 //compatibility with Apples original code. (see .m)
-+(Reachability*)reachabilityWithHostName:(NSString*)hostname;
-+(Reachability*)reachabilityForInternetConnection;
-+(Reachability*)reachabilityWithAddress:(void *)hostAddress;
-+(Reachability*)reachabilityForLocalWiFi;
++(instancetype)reachabilityWithHostName:(NSString*)hostname;
++(instancetype)reachabilityForInternetConnection;
++(instancetype)reachabilityWithAddress:(void *)hostAddress;
++(instancetype)reachabilityForLocalWiFi;
 
--(Reachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref;
+-(instancetype)initWithReachabilityRef:(SCNetworkReachabilityRef)ref;
 
 -(BOOL)startNotifier;
 -(void)stopNotifier;
