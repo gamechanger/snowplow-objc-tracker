@@ -2,7 +2,7 @@
 //  SPUtils.m
 //  Snowplow
 //
-//  Copyright (c) 2013-2018 Snowplow Analytics Ltd. All rights reserved.
+//  Copyright (c) 2013-2020 Snowplow Analytics Ltd. All rights reserved.
 //
 //  This program is licensed to you under the Apache License Version 2.0,
 //  and you may not use this file except in compliance with the Apache License
@@ -16,30 +16,40 @@
 //  language governing permissions and limitations there under.
 //
 //  Authors: Jonathan Almeida, Joshua Beemster
-//  Copyright: Copyright (c) 2013-2018 Snowplow Analytics Ltd
+//  Copyright: Copyright (c) 2013-2020 Snowplow Analytics Ltd
 //  License: Apache License Version 2.0
 //
 
 #import "Snowplow.h"
+#import "SPDevicePlatform.h"
 #import "SPUtilities.h"
+#import "SPPayload.h"
+#import "SPSelfDescribingJson.h"
+#import "SPScreenState.h"
+#include <sys/sysctl.h>
+#import "SPLogger.h"
 
 #if SNOWPLOW_TARGET_IOS
 
-#import "OpenIDFA.h"
 #import <UIKit/UIScreen.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
-#import "Reachability.h"
+#import <SystemConfiguration/SystemConfiguration.h>
+#import "SNOWReachability.h"
 
 #elif SNOWPLOW_TARGET_OSX
 
 #import <AppKit/AppKit.h>
 #import <Carbon/Carbon.h>
-#include <sys/sysctl.h>
+#import "SNOWReachability.h"
 
 #elif SNOWPLOW_TARGET_TV
 
 #import <UIKit/UIScreen.h>
+
+#elif SNOWPLOW_TARGET_WATCHOS
+
+#import <WatchKit/WatchKit.h>
 
 #endif
 
@@ -54,46 +64,62 @@
     return [[NSLocale preferredLanguages] objectAtIndex:0];
 }
 
-+ (NSString *) getPlatform {
++ (SPDevicePlatform) getPlatform {
 #if SNOWPLOW_TARGET_IOS
-    return @"mob";
+    return SPDevicePlatformMobile;
 #else
-    return @"pc";
+    return SPDevicePlatformDesktop;
 #endif
 }
 
 + (NSString *) getEventId {
+    return [SPUtilities getUUIDString];
+}
+
++ (NSString *) getUUIDString {
     // Generates type 4 UUID
     return [[NSUUID UUID] UUIDString].lowercaseString;
 }
 
-+ (NSString *) getOpenIdfa {
-    NSString * idfa = nil;
-#if SNOWPLOW_TARGET_IOS
-#ifndef SNOWPLOW_NO_OPENIDFA
-    if (!SNOWPLOW_iOS_9_OR_LATER) {
-        idfa = [OpenIDFA sameDayOpenIDFA];
-    }
-#endif
-#endif
-    return idfa;
++ (bool ) isUUIDString:(nonnull NSString *)uuidString {
+    return [[NSUUID alloc] initWithUUIDString:uuidString] != nil;
 }
 
+/*
+ The IDFA can be retrieved using selectors rather than proper instance methods because
+ the compiler would complain about the missing AdSupport framework.
+ As stated in the header file, this only works if you have the AdSupport library in your project.
+ If you have it and you want to use IDFA, add the compiler flag <code>SNOWPLOW_IDFA_ENABLED</code> to your build settings.
+ If you haven't AdSupport framework in your project or SNOWPLOW_IDFA_ENABLED it's not set, it just compiles returning a nil advertisingIdentifier.
+ 
+ Note that `advertisingIdentifier` returns a sequence of 0s when used in the simulator.
+ Use a real device if you want a proper IDFA.
+ */
 + (NSString *) getAppleIdfa {
-    NSString* idfa = nil;
 #if SNOWPLOW_TARGET_IOS || SNOWPLOW_TARGET_TV
-#ifndef SNOWPLOW_NO_IFA
+#ifdef SNOWPLOW_IDFA_ENABLED
     Class ASIdentifierManagerClass = NSClassFromString(@"ASIdentifierManager");
-    if (ASIdentifierManagerClass) {
-        SEL sharedManagerSelector = NSSelectorFromString(@"sharedManager");
-        id sharedManager = ((id (*)(id, SEL))[ASIdentifierManagerClass methodForSelector:sharedManagerSelector])(ASIdentifierManagerClass, sharedManagerSelector);
-        SEL advertisingIdentifierSelector = NSSelectorFromString(@"advertisingIdentifier");
-        NSUUID *uuid = ((NSUUID* (*)(id, SEL))[sharedManager methodForSelector:advertisingIdentifierSelector])(sharedManager, advertisingIdentifierSelector);
-        idfa = [uuid UUIDString];
-    }
+    if (!ASIdentifierManagerClass) return nil;
+
+    SEL sharedManagerSelector = NSSelectorFromString(@"sharedManager");
+    if (![ASIdentifierManagerClass respondsToSelector:sharedManagerSelector]) return nil;
+
+    id sharedManager = ((id (*)(id, SEL))[ASIdentifierManagerClass methodForSelector:sharedManagerSelector])(ASIdentifierManagerClass, sharedManagerSelector);
+
+    SEL isAdvertisingTrackingEnabledSelector = NSSelectorFromString(@"isAdvertisingTrackingEnabled");
+    if (![sharedManager respondsToSelector:isAdvertisingTrackingEnabledSelector]) return nil;
+
+    BOOL isAdvertisingTrackingEnabled = ((BOOL (*)(id, SEL))[sharedManager methodForSelector:isAdvertisingTrackingEnabledSelector])(sharedManager, isAdvertisingTrackingEnabledSelector);
+    if (!isAdvertisingTrackingEnabled) return nil;
+
+    SEL advertisingIdentifierSelector = NSSelectorFromString(@"advertisingIdentifier");
+    if (![sharedManager respondsToSelector:advertisingIdentifierSelector]) return nil;
+
+    NSUUID *uuid = ((NSUUID* (*)(id, SEL))[sharedManager methodForSelector:advertisingIdentifierSelector])(sharedManager, advertisingIdentifierSelector);
+    return [uuid UUIDString];
 #endif
 #endif
-    return idfa;
+    return nil;
 }
 
 + (NSString *) getAppleIdfv {
@@ -107,38 +133,71 @@
 }
 
 + (NSString *) getCarrierName {
-    NSString * carrierName = nil;
 #if SNOWPLOW_TARGET_IOS
-    CTTelephonyNetworkInfo *netinfo = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier *carrier = [netinfo subscriberCellularProvider];
-    carrierName = [carrier carrierName];
-#endif
-    return carrierName;
-}
-
-+ (NSString *) getNetworkType {
-    NSString * type = nil;
-#if SNOWPLOW_TARGET_IOS
-    Reachability *reachability = [Reachability reachabilityForInternetConnection];
-    [reachability startNotifier];
-    NetworkStatus status = [reachability currentReachabilityStatus];
-    if (status == ReachableViaWiFi) {
-        type = @"wifi";
+    CTTelephonyNetworkInfo *networkInfo = [CTTelephonyNetworkInfo new];
+    CTCarrier *carrier;
+    if (@available(iOS 12.1, *)) {
+        // `serviceSubscribersCellularProviders` has a bug in the iOS 12.0 so we use it from iOS 12.1
+        NSString *carrierKey = [SPUtilities carrierKey];
+        if (!carrierKey) {
+            return nil;
+        }
+        NSDictionary<NSString *,CTCarrier *> *services = [networkInfo serviceSubscriberCellularProviders];
+        carrier = services[carrierKey];
+    } else {
+        carrier = [networkInfo subscriberCellularProvider];
     }
-    else if (status == ReachableViaWWAN) {
-        type = @"mobile";
-    }
+    return [carrier carrierName];
 #endif
-    return type;
+    return nil;
 }
 
 + (NSString *) getNetworkTechnology {
-    NSString * netTech = nil;
 #if SNOWPLOW_TARGET_IOS
-    CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
-    netTech = [netInfo currentRadioAccessTechnology];
+    CTTelephonyNetworkInfo *networkInfo = [CTTelephonyNetworkInfo new];
+    if (@available(iOS 12.1, *)) {
+        // `serviceCurrentRadioAccessTechnology` has a bug in the iOS 12.0 so we use it from iOS 12.1
+        NSString *carrierKey = [SPUtilities carrierKey];
+        if (!carrierKey) {
+            return nil;
+        }
+        NSDictionary<NSString *, NSString *> *services = [networkInfo serviceCurrentRadioAccessTechnology];
+        return services[carrierKey];
+    } else {
+        return [networkInfo currentRadioAccessTechnology];
+    }
 #endif
-    return netTech;
+    return nil;
+}
+
++ (NSString *)carrierKey {
+#if SNOWPLOW_TARGET_IOS
+    if (@available(iOS 12.1, *)) {
+        CTTelephonyNetworkInfo *networkInfo = [CTTelephonyNetworkInfo new];
+        // `serviceSubscribersCellularProviders` has a bug in the iOS 12.0 so we use it from iOS 12.1
+        NSDictionary<NSString *,CTCarrier *> *services = [networkInfo serviceSubscriberCellularProviders];
+        NSArray<NSString *> *carrierKeys = services.allKeys;
+        // From iOS 12, iPhones with eSIMs can return multiple carrier providers.
+        // We can't prefer anyone of them so we track the first reported.
+        return carrierKeys.firstObject;
+    }
+#endif
+    return nil;
+}
+
++ (NSString *) getNetworkType {
+#if SNOWPLOW_TARGET_IOS
+    SNOWNetworkStatus networkStatus = [SNOWReachability reachabilityForInternetConnection].networkStatus;
+    switch (networkStatus) {
+        case SNOWNetworkStatusOffline:
+            return @"offline";
+        case SNOWNetworkStatusWifi:
+            return @"wifi";
+        case SNOWNetworkStatusWWAN:
+            return @"mobile";
+    }
+#endif
+    return @"offline";
 }
 
 + (int) getTransactionId {
@@ -154,6 +213,9 @@
 #if SNOWPLOW_TARGET_IOS || SNOWPLOW_TARGET_TV
     CGRect mainScreen = [[UIScreen mainScreen] bounds];
     CGFloat screenScale = [[UIScreen mainScreen] scale];
+#elif SNOWPLOW_TARGET_WATCHOS
+    CGRect mainScreen = [[WKInterfaceDevice currentDevice] screenBounds];
+    CGFloat screenScale = [[WKInterfaceDevice currentDevice] screenScale];
 #else
     CGRect mainScreen = [[NSScreen mainScreen] frame];
     CGFloat screenScale = [[NSScreen mainScreen] backingScaleFactor];
@@ -174,35 +236,34 @@
 }
 
 + (NSString *) getDeviceModel {
-#if SNOWPLOW_TARGET_IOS || SNOWPLOW_TARGET_TV
-    return [[UIDevice currentDevice] model];
-#else
+    NSString *simulatorModel = [NSProcessInfo.processInfo.environment objectForKey: @"SIMULATOR_MODEL_IDENTIFIER"];
+    if (simulatorModel) return simulatorModel;
+
     size_t size;
-    char *model = nil;
-    sysctlbyname("hw.model", NULL, &size, NULL, 0);
-    model = malloc(size);
-    sysctlbyname("hw.model", model, &size, NULL, 0);
-    NSString *hwString = [NSString stringWithCString:model encoding:NSUTF8StringEncoding];
-    free(model);
-    return hwString;
-#endif
+    sysctlbyname("hw.machine", NULL, &size, NULL, 0);
+    char *machine = malloc(size);
+    sysctlbyname("hw.machine", machine, &size, NULL, 0);
+    NSString *platform = [NSString stringWithUTF8String:machine];
+    free(machine);
+    return platform;
 }
 
 + (NSString *) getOSVersion {
 #if SNOWPLOW_TARGET_IOS || SNOWPLOW_TARGET_TV
     return [[UIDevice currentDevice] systemVersion];
+#elif SNOWPLOW_TARGET_WATCHOS
+    return [[WKInterfaceDevice currentDevice] systemVersion];
 #else
     SInt32 osxMajorVersion;
     SInt32 osxMinorVersion;
     SInt32 osxPatchFixVersion;
     NSProcessInfo *info = [NSProcessInfo processInfo];
-    if ([info respondsToSelector:@selector(operatingSystemVersion)]) {
+    if (@available(macOS 10.10, *)) {
         NSOperatingSystemVersion systemVersion = [info operatingSystemVersion];
         osxMajorVersion = (int)systemVersion.majorVersion;
         osxMinorVersion = (int)systemVersion.minorVersion;
         osxPatchFixVersion = (int)systemVersion.patchVersion;
-    }
-    else {
+    } else {
         // TODO eliminate this block once minimum version is OS X 10+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -222,6 +283,8 @@
     return @"ios";
 #elif SNOWPLOW_TARGET_TV
     return @"tvos";
+#elif SNOWPLOW_TARGET_WATCHOS
+    return @"watchos";
 #else
     return @"osx";
 #endif
@@ -231,17 +294,13 @@
     return [[NSBundle mainBundle] bundleIdentifier];
 }
 
-+ (NSString *)urlEncodeString:(NSString *)s {
-    if (!s) {
++ (NSString *)urlEncodeString:(NSString *)string {
+    if (!string) {
         return @"";   
     }
-    return (NSString *)CFBridgingRelease(
-            CFURLCreateStringByAddingPercentEscapes(
-                NULL, 
-                (CFStringRef) s, 
-                NULL, 
-                (CFStringRef)@"!*'\"();:@&=+$,/?%#[]% ",
-                CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding)));
+    NSMutableCharacterSet *allowedCharSet = [NSCharacterSet URLQueryAllowedCharacterSet].mutableCopy;
+    [allowedCharSet removeCharactersInString:@"!*'\"();:@&=+$,/?%#[]% "];
+    return [string stringByAddingPercentEncodingWithAllowedCharacters:allowedCharSet];
 }
 
 + (NSString *)urlEncodeDictionary:(NSDictionary *)d {
@@ -256,19 +315,12 @@
     return [str lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 }
 
-+ (BOOL) isOnline {
-    BOOL online = YES;
-#if SNOWPLOW_TARGET_IOS
-    Reachability * reachability = [Reachability reachabilityForInternetConnection];
-    NetworkStatus networkStatus = [reachability currentReachabilityStatus];
-    online = networkStatus != NotReachable;
-#endif
-    return online;
-}
-
 + (void) checkArgument:(BOOL)argument withMessage:(NSString *)message {
     if (!argument) {
-        [NSException raise:@"IllegalArgumentException" format:@"%@", message];
+        SPLogDebug(@"Error occurred while checking argument: %@", message);
+         #if DEBUG
+            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:message userInfo:nil];
+         #endif
     }
 }
 
@@ -318,7 +370,7 @@
 + (NSDictionary *) replaceHyphenatedKeysWithCamelcase:(NSDictionary *)dict{
     NSMutableDictionary * newDictionary = [[NSMutableDictionary alloc] init];
     for (NSString * key in dict) {
-        if ([key containsString:@"-"]) {
+        if ([self string:key contains:@"-"]) {
             if ([dict[key] isKindOfClass:[NSDictionary class]]) {
                 newDictionary[[self camelcaseParsedKey:key]] = [self replaceHyphenatedKeysWithCamelcase:dict[key]];
             } else {
@@ -332,8 +384,17 @@
             }
         }
     }
-
+    
     return [[NSDictionary alloc] initWithDictionary:newDictionary copyItems:YES];
+}
+
++ (BOOL) string:(NSString *)string contains:(NSString *)subString {
+    if (!subString) return false;
+    if (@available(macOS 10.10, *)) {
+        return [string containsString:subString];
+    } else {
+        return ([string rangeOfString:subString].location != NSNotFound);
+    }
 }
 
 + (NSString *) camelcaseParsedKey:(NSString *)key {
@@ -344,11 +405,11 @@
     while (![scanner isAtEnd]) {
         [scanner scanUpToString:@"-" intoString:&scannedWord];
         [words addObject:scannedWord];
-        NSLog(@"scanned word: %@", scannedWord);
+        SPLogVerbose(@"scanned word: %@", scannedWord);
         [scanner scanString:@"-" intoString:nil];
     }
 
-    NSLog(@"%@", words);
+    SPLogVerbose(@"%@", words);
     if ([words count] == 0) {
         return @"";
     } else if ([words count] == 1) {
@@ -363,6 +424,47 @@
         }
         return camelcaseKey;
     }
+}
+
++ (NSString *) validateString:(NSString *)aString {
+    if (!aString | ([aString length] == 0)) {
+        return nil;
+    }
+    return aString;
+}
+
++ (SPSelfDescribingJson *) getScreenContextWithScreenState:(SPScreenState *)screenState {
+    SPPayload * contextPayload = [screenState getValidPayload];
+    if (contextPayload) {
+        return [[SPSelfDescribingJson alloc] initWithSchema:kSPScreenContextSchema andPayload:contextPayload];
+    } else {
+    	return nil;
+    }
+}
+
++ (SPSelfDescribingJson *) getApplicationContext {
+    NSString * version = [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleShortVersionString"];
+    NSString * build = [[NSBundle mainBundle] objectForInfoDictionaryKey: (NSString *)kCFBundleVersionKey];
+    return [self getApplicationContextWithVersion:version andBuild:build];
+}
+
++ (SPSelfDescribingJson *) getApplicationContextWithVersion:(NSString *)version andBuild:(NSString *)build {
+    SPPayload * payload = [[SPPayload alloc] init];
+    [payload addValueToPayload:build forKey:kSPApplicationBuild];
+    [payload addValueToPayload:version forKey:kSPApplicationVersion];
+    if (payload != nil && [[payload getAsDictionary] count] > 0) {
+        return [[SPSelfDescribingJson alloc] initWithSchema:kSPApplicationContextSchema andPayload:payload];
+    } else {
+        return nil;
+    }
+}
+
++ (NSString *) getAppVersion {
+    return [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleShortVersionString"];
+}
+
++ (NSString *) getAppBuild {
+    return [[NSBundle mainBundle] objectForInfoDictionaryKey: (NSString *)kCFBundleVersionKey];
 }
 
 @end

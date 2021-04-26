@@ -2,7 +2,7 @@
 //  Snowplow.h
 //  Snowplow
 //
-//  Copyright (c) 2013-2018 Snowplow Analytics Ltd. All rights reserved.
+//  Copyright (c) 2013-2020 Snowplow Analytics Ltd. All rights reserved.
 //
 //  This program is licensed to you under the Apache License Version 2.0,
 //  and you may not use this file except in compliance with the Apache License
@@ -16,19 +16,20 @@
 //  language governing permissions and limitations there under.
 //
 //  Authors: Jonathan Almeida, Joshua Beemster
-//  Copyright: Copyright (c) 2013-2018 Snowplow Analytics Ltd
+//  Copyright: Copyright (c) 2013-2020 Snowplow Analytics Ltd
 //  License: Apache License Version 2.0
 //
 
 #import <Foundation/Foundation.h>
 
 // Macros to define what OS is running:
-// 1. iOS: iOS == 1; OSX == 1; tvOS == 0
+// 1. iOS: iOS == 1; OSX == 1; tvOS == 0 ; watchOS == 0
 // 2. OSX: iOS == 0; OSX == 1; tvOS == 0
 // 3. TV:  iOS == 1; OSX == 1; tvOS == 1
-#define SNOWPLOW_TARGET_IOS (TARGET_OS_IPHONE && TARGET_OS_MAC && !(TARGET_OS_TV))
+#define SNOWPLOW_TARGET_IOS (TARGET_OS_IPHONE && TARGET_OS_MAC && !(TARGET_OS_TV) && !(TARGET_OS_WATCH))
 #define SNOWPLOW_TARGET_OSX (!(TARGET_OS_IPHONE) && TARGET_OS_MAC && !(TARGET_OS_TV))
 #define SNOWPLOW_TARGET_TV  (TARGET_OS_IPHONE && TARGET_OS_MAC && TARGET_OS_TV)
+#define SNOWPLOW_TARGET_WATCHOS (TARGET_OS_WATCH)
 
 // Macros for iOS Versions
 #if SNOWPLOW_TARGET_IOS
@@ -36,14 +37,6 @@
 #define SNOWPLOW_iOS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 #define SNOWPLOW_iOS_9_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0)
 #endif
-
-// Macros for Logging
-#ifdef SNOWPLOW_DEBUG
-#   define SnowplowDLog(...) NSLog(__VA_ARGS__)
-#else
-#   define SnowplowDLog(...)
-#endif
-#define ALog(...) NSLog(__VA_ARGS__)
 
 @interface Snowplow : NSObject
 
@@ -72,13 +65,19 @@ extern NSString * const kSPContextSchema;
 extern NSString * const kSPMobileContextSchema;
 extern NSString * const kSPDesktopContextSchema;
 extern NSString * const kSPSessionContextSchema;
+extern NSString * const kSPScreenContextSchema;
 extern NSString * const kSPGeoContextSchema;
-extern NSString * const kSPConsentDocumentSchema;
-extern NSString * const kSPConsentGrantedSchema;
 extern NSString * const kSPConsentWithdrawnSchema;
 extern NSString * const kSPConsentDocumentSchema;
 extern NSString * const kSPConsentGrantedSchema;
 extern NSString * const kSPPushNotificationSchema;
+extern NSString * const kSPApplicationContextSchema;
+extern NSString * const kSPBackgroundSchema;
+extern NSString * const kSPForegroundSchema;
+extern NSString * const kSPErrorSchema;
+extern NSString * const kSPApplicationInstallSchema;
+extern NSString * const kSPGdprContextSchema;
+extern NSString * const kSPDiagnosticErrorSchema;
 
 // --- Event Keys
 
@@ -95,6 +94,7 @@ extern NSString * const kSPData;
 extern NSString * const kSPEvent;
 extern NSString * const kSPEid;
 extern NSString * const kSPTimestamp;
+extern NSString * const kSPTrueTimestamp;
 extern NSString * const kSPSentTimestamp;
 extern NSString * const kSPTrackerVersion;
 extern NSString * const kSPAppId;
@@ -128,11 +128,14 @@ extern NSString * const kSPPlatformDeviceModel;
 // --- Mobile Context
 
 extern NSString * const kSPMobileCarrier;
-extern NSString * const kSPMobileOpenIdfa;
 extern NSString * const kSPMobileAppleIdfa;
 extern NSString * const kSPMobileAppleIdfv;
 extern NSString * const kSPMobileNetworkType;
 extern NSString * const kSPMobileNetworkTech;
+
+// --- Application Context
+extern NSString * const kSPApplicationVersion;
+extern NSString * const kSPApplicationBuild;
 
 // --- Session Context
 
@@ -153,6 +156,13 @@ extern NSString * const kSPGeoAltitudeAccuracy;
 extern NSString * const kSPGeoBearing;
 extern NSString * const kSPGeoSpeed;
 extern NSString * const kSPGeoTimestamp;
+
+// --- Screen Context
+extern NSString * const kSPScreenName;
+extern NSString * const kSPScreenType;
+extern NSString * const kSPScreenId;
+extern NSString * const kSPScreenViewController;
+extern NSString * const kSPScreenTopViewController;
 
 // --- Page View Event
 
@@ -204,8 +214,15 @@ extern NSString * const KSPCdDescription;
 
 // --- Screen View Event
 
-extern NSString * const kSPSvId;
 extern NSString * const kSPSvName;
+extern NSString * const kSPSvType;
+extern NSString * const kSPSvScreenId;
+extern NSString * const kSPSvPreviousName;
+extern NSString * const kSPSvPreviousType;
+extern NSString * const kSPSvPreviousScreenId;
+extern NSString * const kSPSvTransitionType;
+extern NSString * const kSPSvViewController;
+extern NSString * const kSPSvTopViewController;
 
 // --- User Timing Event
 
@@ -233,5 +250,45 @@ extern NSString * const kSPPnAttachments;
 extern NSString * const kSPPnAttachmentId;
 extern NSString * const kSPPnAttachmentUrl;
 extern NSString * const kSPPnAttachmentType;
+
+// --- Background Event
+
+extern NSString * const kSPBackgroundIndex;
+
+// --- Foreground Event
+
+extern NSString * const kSPForegroundIndex;
+
+// --- Error Event
+
+extern NSString * const kSPErrorMessage;
+extern NSString * const kSPErrorStackTrace;
+extern NSString * const kSPErrorName;
+extern NSString * const kSPErrorLanguage;
+
+extern NSString * const kSPErrorTrackerUrl;
+extern NSString * const kSPErrorTrackerProtocol;
+extern NSString * const kSPErrorTrackerMethod;
+
+// --- Install tracking
+
+extern NSString * const kSPInstalledBefore;
+extern NSString * const kSPInstallTimestamp;
+extern NSString * const kSPPreviousInstallVersion;
+extern NSString * const kSPPreviousInstallBuild;
+
+// --- GDPR Context
+
+extern NSString * const kSPBasisForProcessing;
+extern NSString * const kSPDocumentId;
+extern NSString * const kSPDocumentVersion;
+extern NSString * const kSPDocumentDescription;
+
+// --- Tracker Diagnostic
+
+extern NSString * const kSPDiagnosticErrorMessage;
+extern NSString * const kSPDiagnosticErrorStack;
+extern NSString * const kSPDiagnosticErrorClassName;
+extern NSString * const kSPDiagnosticErrorExceptionName;
 
 @end

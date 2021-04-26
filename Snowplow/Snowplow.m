@@ -2,7 +2,7 @@
 //  Snowplow.m
 //  Snowplow
 //
-//  Copyright (c) 2013-2018 Snowplow Analytics Ltd. All rights reserved.
+//  Copyright (c) 2013-2020 Snowplow Analytics Ltd. All rights reserved.
 //
 //  This program is licensed to you under the Apache License Version 2.0,
 //  and you may not use this file except in compliance with the Apache License
@@ -16,7 +16,7 @@
 //  language governing permissions and limitations there under.
 //
 //  Authors: Joshua Beemster
-//  Copyright: Copyright (c) 2018 Snowplow Analytics Ltd
+//  Copyright: Copyright (c) 2020 Snowplow Analytics Ltd
 //  License: Apache License Version 2.0
 //
 
@@ -27,11 +27,13 @@
 // --- Version
 
 #if SNOWPLOW_TARGET_IOS
-NSString * const kSPVersion               = @"ios-0.8.0";
+NSString * const kSPVersion               = @"ios-1.7.0";
 #elif SNOWPLOW_TARGET_TV
-NSString * const kSPVersion               = @"tvos-0.8.0";
+NSString * const kSPVersion               = @"tvos-1.7.0";
+#elif SNOWPLOW_TARGET_WATCHOS
+NSString * const kSPVersion               = @"watchos-1.7.0";
 #else
-NSString * const kSPVersion               = @"osx-0.8.0";
+NSString * const kSPVersion               = @"osx-1.7.0";
 #endif
 
 // --- Emitter
@@ -47,19 +49,27 @@ NSString * const kSPEndpointGet           = @"/i";
 NSString * const kSPIglu                  = @"iglu";
 NSString * const kSPSnowplowVendor        = @"com.snowplowanalytics.snowplow";
 NSString * const kSPSchemaTag             = @"jsonschema";
-NSString * const kSPPayloadDataSchema     = @"iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-3";
+NSString * const kSPPayloadDataSchema     = @"iglu:com.snowplowanalytics.snowplow/payload_data/jsonschema/1-0-4";
 NSString * const kSPUserTimingsSchema     = @"iglu:com.snowplowanalytics.snowplow/timing/jsonschema/1-0-0";
-NSString * const kSPScreenViewSchema      = @"iglu:com.snowplowanalytics.snowplow/screen_view/jsonschema/1-0-0";
+NSString * const kSPScreenViewSchema      = @"iglu:com.snowplowanalytics.mobile/screen_view/jsonschema/1-0-0";
 NSString * const kSPUnstructSchema        = @"iglu:com.snowplowanalytics.snowplow/unstruct_event/jsonschema/1-0-0";
 NSString * const kSPContextSchema         = @"iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1-0-1";
 NSString * const kSPMobileContextSchema   = @"iglu:com.snowplowanalytics.snowplow/mobile_context/jsonschema/1-0-1";
 NSString * const kSPDesktopContextSchema  = @"iglu:com.snowplowanalytics.snowplow/desktop_context/jsonschema/1-0-0";
 NSString * const kSPSessionContextSchema  = @"iglu:com.snowplowanalytics.snowplow/client_session/jsonschema/1-0-1";
+NSString * const kSPScreenContextSchema   = @"iglu:com.snowplowanalytics.mobile/screen/jsonschema/1-0-0";
 NSString * const kSPGeoContextSchema      = @"iglu:com.snowplowanalytics.snowplow/geolocation_context/jsonschema/1-1-0";
 NSString * const kSPConsentDocumentSchema = @"iglu:com.snowplowanalytics.snowplow/consent_document/jsonschema/1-0-0";
 NSString * const kSPConsentGrantedSchema = @"iglu:com.snowplowanalytics.snowplow/consent_granted/jsonschema/1-0-0";
 NSString * const kSPConsentWithdrawnSchema = @"iglu:com.snowplowanalytics.snowplow/consent_withdrawn/jsonschema/1-0-0";
 NSString * const kSPPushNotificationSchema = @"iglu:com.apple/notification_event/jsonschema/1-0-0";
+NSString * const kSPApplicationContextSchema = @"iglu:com.snowplowanalytics.mobile/application/jsonschema/1-0-0";
+NSString * const kSPForegroundSchema = @"iglu:com.snowplowanalytics.snowplow/application_foreground/jsonschema/1-0-0";
+NSString * const kSPBackgroundSchema = @"iglu:com.snowplowanalytics.snowplow/application_background/jsonschema/1-0-0";
+NSString * const kSPErrorSchema = @"iglu:com.snowplowanalytics.snowplow/application_error/jsonschema/1-0-2";
+NSString * const kSPApplicationInstallSchema = @"iglu:com.snowplowanalytics.mobile/application_install/jsonschema/1-0-0";
+NSString * const kSPGdprContextSchema     = @"iglu:com.snowplowanalytics.snowplow/gdpr/jsonschema/1-0-0";
+NSString * const kSPDiagnosticErrorSchema = @"iglu:com.snowplowanalytics.snowplow/diagnostic_error/jsonschema/1-0-0";
 
 // --- Event Keys
 
@@ -76,6 +86,7 @@ NSString * const kSPData                  = @"data";
 NSString * const kSPEvent                 = @"e";
 NSString * const kSPEid                   = @"eid";
 NSString * const kSPTimestamp             = @"dtm";
+NSString * const kSPTrueTimestamp         = @"ttm";
 NSString * const kSPSentTimestamp         = @"stm";
 NSString * const kSPTrackerVersion        = @"tv";
 NSString * const kSPAppId                 = @"aid";
@@ -109,11 +120,15 @@ NSString * const kSPPlatformDeviceModel   = @"deviceModel";
 // --- Mobile Context
 
 NSString * const kSPMobileCarrier         = @"carrier";
-NSString * const kSPMobileOpenIdfa        = @"openIdfa";
 NSString * const kSPMobileAppleIdfa       = @"appleIdfa";
 NSString * const kSPMobileAppleIdfv       = @"appleIdfv";
 NSString * const kSPMobileNetworkType     = @"networkType";
 NSString * const kSPMobileNetworkTech     = @"networkTechnology";
+
+// --- Application Context
+
+NSString * const kSPApplicationVersion    = @"version";
+NSString * const kSPApplicationBuild      = @"build";
 
 // --- Session Context
 
@@ -134,6 +149,13 @@ NSString * const kSPGeoAltitudeAccuracy   = @"altitudeAccuracy";
 NSString * const kSPGeoBearing            = @"bearing";
 NSString * const kSPGeoSpeed              = @"speed";
 NSString * const kSPGeoTimestamp          = @"timestamp";
+
+// --- Screen Context
+NSString * const kSPScreenName                = @"name";
+NSString * const kSPScreenType                = @"type";
+NSString * const kSPScreenId                  = @"id";
+NSString * const kSPScreenViewController      = @"viewController";
+NSString * const kSPScreenTopViewController   = @"topViewController";
 
 // --- Page View Event
 
@@ -185,8 +207,16 @@ NSString * const KSPCdDescription         = @"description";
 
 // --- Screen View Event
 
-NSString * const kSPSvId                  = @"id";
-NSString * const kSPSvName                = @"name";
+NSString * const kSPSvName                    = @"name";
+NSString * const kSPSvType                    = @"type";
+NSString * const kSPSvScreenId                = @"id";
+NSString * const kSPSvPreviousName            = @"previousName";
+NSString * const kSPSvPreviousType            = @"previousType";
+NSString * const kSPSvPreviousScreenId        = @"previousId";
+NSString * const kSPSvTransitionType          = @"transitionType";
+NSString * const kSPSvViewController          = @"viewController";
+NSString * const kSPSvTopViewController       = @"topViewController";
+
 
 // --- User Timing Event
 
@@ -214,5 +244,47 @@ NSString * const kSPPnAttachments         = @"attachments";
 NSString * const kSPPnAttachmentId        = @"identifier";
 NSString * const kSPPnAttachmentUrl       = @"url";
 NSString * const kSPPnAttachmentType      = @"type";
+
+// --- Foreground Event
+
+NSString * const kSPBackgroundIndex       = @"backgroundIndex";
+
+// --- Background Event
+
+NSString * const kSPForegroundIndex       = @"foregroundIndex";
+
+// --- Error Event
+
+NSString * const kSPErrorName             = @"exceptionName";
+NSString * const kSPErrorStackTrace       = @"stackTrace";
+NSString * const kSPErrorLanguage         = @"programmingLanguage";
+NSString * const kSPErrorMessage          = @"message";
+
+// --- Error Event - Tracker Settings Storage
+
+NSString * const kSPErrorTrackerUrl       = @"url";
+NSString * const kSPErrorTrackerProtocol  = @"protocol";
+NSString * const kSPErrorTrackerMethod    = @"method";
+
+// --- Install tracking
+
+NSString * const kSPInstalledBefore        = @"SPInstalledBefore";
+NSString * const kSPInstallTimestamp       = @"SPInstallTimestamp";
+NSString * const kSPPreviousInstallVersion = @"SPInstallVersion";
+NSString * const kSPPreviousInstallBuild   = @"SPInstallBuild";
+
+// --- GDPR Context
+
+NSString * const kSPBasisForProcessing  = @"basisForProcessing";
+NSString * const kSPDocumentId          = @"documentId";
+NSString * const kSPDocumentVersion     = @"documentVersion";
+NSString * const kSPDocumentDescription = @"documentDescription";
+
+// --- Tracker Diagnostic
+
+NSString * const kSPDiagnosticErrorMessage       = @"message";
+NSString * const kSPDiagnosticErrorStack         = @"stackTrace";
+NSString * const kSPDiagnosticErrorClassName     = @"className";
+NSString * const kSPDiagnosticErrorExceptionName = @"exceptionName";
 
 @end

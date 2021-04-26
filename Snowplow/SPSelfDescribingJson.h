@@ -2,7 +2,7 @@
 //  SPSelfDescribingJson.h
 //  Snowplow
 //
-//  Copyright (c) 2013-2018 Snowplow Analytics Ltd. All rights reserved.
+//  Copyright (c) 2013-2020 Snowplow Analytics Ltd. All rights reserved.
 //
 //  This program is licensed to you under the Apache License Version 2.0,
 //  and you may not use this file except in compliance with the Apache License
@@ -16,7 +16,7 @@
 //  language governing permissions and limitations there under.
 //
 //  Authors: Joshua Beemster
-//  Copyright: Copyright (c) 2018 Snowplow Analytics Ltd
+//  Copyright: Copyright (c) 2020 Snowplow Analytics Ltd
 //  License: Apache License Version 2.0
 //
 
@@ -24,65 +24,83 @@
 
 @class SPPayload;
 
+/*!
+ @class SPSelfDescribingJson
+ @brief The class that represents self-describing JSONs.
+
+ This class holds the information of a self-describing JSON.
+
+ @see SPPayload
+ */
 @interface SPSelfDescribingJson : NSObject
 
-/**
- *  Initializes a newly allocated SPSelfDescribingJson
- *  @param schema a valid schema string
- *  @param data data to be embedded into the SelfDescribingJson
- *  @return An SPSelfDescribingJson.
- */
-- (id) initWithSchema:(NSString *)schema andData:(NSObject *)data;
+/// the schema URI for this self-describing JSON.
+@property (nonatomic) NSString *schema;
+/// Data of the self-describing JSON.
+@property (nonatomic, readonly) NSObject *data;
 
-/**
- *  Initializes a newly allocated SPSelfDescribingJson
- *  @param schema a valid schema string
- *  @param data payload to be embedded into the SelfDescribingJson
- *  @return An SPSelfDescribingJson.
- */
-- (id) initWithSchema:(NSString *)schema andPayload:(SPPayload *)data;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
-/**
- *  Initializes a newly allocated SPSelfDescribingJson
- *  @param schema a valid schema string
- *  @param data payload to be embedded into the SelfDescribingJson
- *  @return An SPSelfDescribingJson.
- */
-- (id) initWithSchema:(NSString *)schema andSelfDescribingJson:(SPSelfDescribingJson *)data;
+/*!
+ @brief Initializes a newly allocated SPSelfDescribingJson.
 
-/**
- * Sets the Schema String to be used for this SelfDescribingJson
- * @param schema The Schema String
+ @param schema A valid schema string.
+ @param data Data to set for data field of the self-describing JSON, should be an NSDictionary.
+ @return An SPSelfDescribingJson.
  */
-- (void) setSchema:(NSString *)schema;
+- (instancetype)initWithSchema:(NSString *)schema andData:(NSObject *)data NS_DESIGNATED_INITIALIZER;
 
-/**
- * Sets the Data of the SelfDescribingJson
- * @param data an NSObject to be nested into the data
+/*!
+ @brief Initializes a newly allocated SPSelfDescribingJson.
+
+ @param schema A valid schema string.
+ @param data Payload to set for data field of the self-describing JSON.
+ @return An SPSelfDescribingJson.
+ */
+- (instancetype)initWithSchema:(NSString *)schema andPayload:(SPPayload *)data;
+
+/*!
+ @brief Initializes a newly allocated SPSelfDescribingJson.
+
+ @param schema A valid schema URI.
+ @param data Self-describing JSON to set for data field of the self-describing JSON.
+ @return An SPSelfDescribingJson.
+ */
+- (instancetype)initWithSchema:(NSString *)schema andSelfDescribingJson:(SPSelfDescribingJson *)data;
+
+/*!
+ @brief Sets the data field of the self-describing JSON.
+
+ @param data An NSObject to be nested into the data.
  */
 - (void) setDataWithObject:(NSObject *)data;
 
-/**
- * Sets the Data of the SelfDescribingJson
- * @param data an SPPayload to be nested into the data
+/*!
+ @brief Sets the data field of the self-describing JSON.
+
+ @param data An SPPayload to be nested into the data.
  */
 - (void) setDataWithPayload:(SPPayload *)data;
 
-/**
- * Sets the Data of the SelfDescribingJson
- * @param data an SelfDescribingJson to be nested into the data
+/*!
+ @brief Sets the data field of the self-describing JSON.
+
+ @param data A self-describing JSON to be nested into the data.
  */
 - (void) setDataWithSelfDescribingJson:(SPSelfDescribingJson *)data;
 
-/**
- * Returns the internal NSDictionary of the SelfDescribingJson
- * @return the payload
- */
-- (NSDictionary *) getAsDictionary;
+/*!
+ @brief Returns the internal NSDictionary of the self-describing JSON.
 
-/**
- * Returns a String description of the internal dictionary
- * @return the dictionary description
+ @return The self-describing JSON as an NSDictionary.
+ */
+- (NSDictionary<NSString *, NSObject *> *) getAsDictionary;
+
+/*!
+ @brief Returns a string description of the internal dictionary.
+
+ @return The description of the dictionary.
  */
 - (NSString *) description;
 

@@ -1,3 +1,180 @@
+
+Version 1.7.0 (2021-04-03)
+--------------------------
+Fix issue of OpenIDFA causing App Rejection (#575)
+
+Version 1.6.2 (2021-01-12)
+--------------------------
+Fix internal Carthage issues with Xcode 12.3 (#561)
+Fix leak on SNOWReachability (#559) (Contribution of @i-dama)
+
+Version 1.6.1 (2020-11-24)
+--------------------------
+Fix AddGlobalContext unable to work when GlobalContexts not initialized (#553)
+Let Crash reporting to add contexts and AppID (#555)
+
+Version 1.6.0 (2020-09-21)
+--------------------------
+Update GitHub Actions to test on iOS 14 (#545)
+Enable Xcode 12 support for Swift Package Manager (#544) (Contribution of @lunij)
+Session storageMechanism is marked SQLITE but it's not (#482)
+Make session uuid rotation dependant on events being tracked (#497)
+
+Version 1.5.0 (2020-09-01)
+--------------------------
+Crash connected with method writeSessionToFile in SPSession (#515)
+Emitter refactoring (#540)
+Report logs to the app (#534)
+Add diagnostic feature (#533)
+
+Version 1.4.1 (2020-07-22)
+--------------------------
+TrueTimestamp has to be set in seconds. (#532)
+ScreenView event doesn't track transitionType (#516) 
+
+Version 1.4.0 (2020-07-10)
+--------------------------
+Validate EventData in Unstructured events (#526)
+Fix url percent escaping (#525)
+Fix contexts duplication (#524)
+Add method for setting true timestamp (#276)
+Renew event ID when event object is reused (#521)
+Move from Travis CI to GitHub Actions (#517)
+Add unified track method for all the events (#518)
+
+Version 1.3.1 (2020-05-07)
+--------------------------
+Remove SPM demo app as it causes issues to Carthage (#513)
+Specifcy FMDB version instead of commit in Package.swift (#512) (Contribution of @BennetLinden)
+Adds public access to a tracker's current session id (#508) (Contribution of @ejensen)
+Add missing references to SPConsentDocument.h (#507) (Contribution of @ejensen)
+
+Version 1.3.0 (2020-04-21)
+--------------------------
+Swift Package Manager unable to find headers on subfolders (#503) (Contribution of @vauxhall)
+Replace deprecated CTTelephonyNetworkInfo methods (#479)
+Fix deprecated CFURLCreateStringByAddingPercentEscapes (#493)
+Fix deprecated keyWindow (#492)
+Update Technical Docs link (#443)
+Update copyright (#499)
+Add GDPR context (#425)
+Add support for global contexts (#357)
+Add Swift Package Manager support (#474) (Contribution of @vauxhall)
+Events processing refactoring (#489)
+
+Version 1.2.2 (2020-03-04)
+--------------------------
+Fix failing test about ScreenContext (#486)
+FMDB versions conflicts with other dependency (#432)
+
+Version 1.2.1 (2020-02-12)
+--------------------------
+Fix screen context not correctly updated on screenView events (#483)
+
+Version 1.2.0 (2020-01-20)
+--------------------------
+Ensure addDictionaryToPayload enumeration over immutable dictionary (#480) (Contribute of Matt Robinson)
+Stop updating screen context when auto-tracking is disabled (#431)
+Fix valueForKey error in auto-tracking for screenviews (#428)
+Add Watchkit support (#465) (Contribute of Leo Mehlig)
+Allow overwriting of the 'platform' parameter (#476)
+ReachabilitySwift conflicts with Reachability (#437)
+
+Version 1.1.5 (2019-11-25)
+--------------------------
+Fix travis script not able to test on iOS 13.2 (#472)
+Fix IDFA rejection when app submitted with v.1.1.4 (#470)
+
+Version 1.1.4 (2019-11-11)
+--------------------------
+Fix doc of method setTimestamp (#467)
+Set simulator device model information when it runs on simulator (#468)
+Update swift demo app for 1.1.4 (#460)
+Update objc demo app for 1.1.4 (#461)
+Fix Slather (#453)
+SnowplowTracker-swift.h file not found static lib building (#427)
+Fix building issues on MacOS target (#466)
+Fix bridging issues importing the framework on swift demo app (#458)
+Fix installation of SnowplowTracker via Carthage (#457)
+Fix Nocilla at 0.11 (#455)
+Comply with isAdvertisingTrackingEnabled (#447)
+Fix incomplete device model information (#444)
+
+Version 1.1.3 (2019-10-18)
+--------------------------
+Fix broken build process (#452)
+Fix ReachabilitySwift at 4.3.1 (#449)
+
+Version 1.1.2 (2019-05-16)
+--------------------------
+Fix Cartfile in SnowplowSwiftDemo (#420)
+Fix SPError class name conflict with WatchKit (#418)
+Fix podspec validation issues (#419)
+
+Version 1.1.1 (2019-05-15)
+--------------------------
+Make SPScreenState.h public and foward declare in SPEvent.h (#415)
+Fix recursion in screen auto-tracking (#416)
+
+Version 1.1.0 (2019-05-06)
+--------------------------
+Allow configurable postPath parameter (#409)
+Fix various build warnings (#414)
+Fix warning about self references being retained in SPSession (#412)
+Add tests for application context (#410)
+Add automatic tracking of install lifecycle event (close #374)
+Enable automatic unhandled exception tracking (#371)
+Add automatic screen view events and screen context (#370)
+
+Version 1.0.4 (2019-02-28)
+--------------------------
+Use NS_ENUM for SPRequestOptions and SPProtocol (#402)
+Fix key-value order for application context (#406)
+
+Version 1.0.3 (2019-02-25)
+--------------------------
+Remove unnecessary Reachability from podspec (#404)
+Fix value reported by Reachability (#403)
+
+Version 1.0.2 (2019-02-20)
+--------------------------
+Add Carthage badge (#390)
+Lower minimum deployment targets (#399)
+Update old badges (#400)
+
+Version 1.0.1 (2019-02-20)
+--------------------------
+Update README.md for new documentation site (#394)
+Update Swift demo Cartfile (#393)
+Add initializers for SPSession (#396)
+Remove dangling constant (#395)
+Add Doxygen-generated API reference (#392)
+
+Version 1.0.0 (2019-01-28)
+--------------------------
+Exposes session property in SPTracker (#256)
+Fix parameter documentation (#389)
+Make initializers unavailable in SPEmitter and SPTracker (#255)
+Add OpenIdfa files to framework target (#382)
+Resolve potential memory leaks from implicit retain of self (#353)
+Embed Swift standard library for tests (#388)
+Disable always embed Swift standard libraries (#381)
+Remove exceptions (#383)
+Explicitly close all statements in FMDB (#384)
+Fix getDocuments function in consent events (#386)
+Add support for Carthage (#291)
+Replace Reachability with Reachability.swift (#385)
+
+Version 0.9.0 (2018-10-15)
+--------------------------
+Fix ConsentGranted builder argument type in tests (#361)
+Add SRCROOT to project header search path (#362)
+Update pods committed to Git repo (#360)
+Update CocoaPods in Travis build (#359)
+Add application context capability (#358)
+Commit IDEWorkspaceChecks.plist to repo (#354)
+Add foreground and background events (#349)
+
 Version 0.8.0 (2018-04-29)
 --------------------------
 Update CocoaPods to 1.4.0 and add pod update repo in build script (#347)
